@@ -1,0 +1,5 @@
+include ':respository'
+include ':base'
+include ':titlebar'
+include ':app'
+rootProject.name = "zhixingzuche-mendian"

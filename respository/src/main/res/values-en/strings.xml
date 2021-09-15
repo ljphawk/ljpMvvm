@@ -1,0 +1,3 @@
+<resources>
+    <string name="requestNetFaild">Network request failed</string>
+</resources>

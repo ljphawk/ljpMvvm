@@ -1,0 +1,143 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'packer'
+apply plugin: 'dagger.hilt.android.plugin'
+apply plugin: 'kotlin-parcelize'
+
+
+def appPackageName = project.getProperties().get("PACKAGE_NAME")
+
+
+android {
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
+
+    defaultConfig {
+        applicationId appPackageName
+        minSdkVersion versions.minSdk
+        targetSdkVersion versions.targetSdk
+        versionCode app.versionCode
+        versionName app.versionName
+        multiDexEnabled true
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+
+    signingConfigs {
+        release {
+            keyAlias 'zhandianguanli'
+            keyPassword 'zdgl,123abc'
+            storeFile file('zdgl.jks')
+            storePassword 'zdgl,123abc'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            zipAlignEnabled true
+            shrinkResources false
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        prev {
+            initWith(release)
+            debuggable true
+        }
+        debug {
+            minifyEnabled false
+            zipAlignEnabled false
+            shrinkResources false
+            debuggable true
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility versions.java
+        targetCompatibility versions.java
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    dexOptions {
+        jumboMode = true
+        javaMaxHeapSize "4g"
+        preDexLibraries = false
+        //This can improve incremental builds, but clean builds may be slower.
+    }
+
+    lintOptions {
+        checkReleaseBuilds true
+        // Or, if you prefer, you can continue to check for errors in release builds,
+        // but continue the build even when errors are found:
+        abortOnError false
+    }
+
+    //忽略某个布局文件，将 tools:viewBindingIgnore="true" 属性添加到相应布局文件的根视图中
+    viewBinding {
+        enabled = true
+    }
+
+}
+
+packer {
+    archiveNameFormat = '站点管理-v${versionName}(${versionCode})-${buildType}-${channel}'
+    archiveOutput = new File("${project.buildDir}/outputs/channels")
+    channelFile = project.rootProject.file("channels/channels.txt")
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+/* project module libs */
+    implementation deps.project.base
+    implementation deps.project.titleBar
+    implementation(deps.project.respository) {
+        transitive = true
+    }
+    /* kotlin androidx */
+    implementation deps.kotlin
+    implementation deps.androidx.appcompat
+    implementation deps.androidx.multidex
+    implementation deps.androidx.core_ktx
+    implementation deps.androidx.constraintlayout
+    implementation deps.androidx.activity_ktx
+    implementation deps.androidx.fragment_ktx
+    implementation deps.androidx.recyclerview
+    implementation deps.google.material
+    implementation deps.androidx.lifecycle_livedata_ktx
+    implementation deps.androidx.lifecycle_viewmodel_ktx
+
+    /* test */
+    testImplementation deps.junit
+    androidTestImplementation deps.androidx.test.junit
+    androidTestImplementation deps.androidx.test.espresso_core
+
+    /* 第三方 */
+    //侧滑返回
+    implementation deps.swipebacklayout
+    //沉浸式
+    implementation deps.immersionbar
+    implementation deps.immersionbar_components
+    //baseRecyclerViewAdapterHelper
+    implementation deps.baseRecyclerViewAdapterHelper
+    //Fresco  https://frescolib.org/docs/index.html
+    implementation deps.fresco
+    implementation deps.fresco_gif
+    //smartRefreshLayout
+    implementation deps.smartRefreshLayout
+    implementation deps.smartRefreshHeader
+    //今日头条适配方案 https://github.com/JessYanCoding/AndroidAutoSize/blob/master/README-zh.md
+    implementation deps.autosize
+    //https://github.com/guolindev/PermissionX
+    implementation deps.permissionX
+    implementation deps.bga_qrcode_zxing
+    implementation deps.drakeet_multitype
+    //hilt
+    implementation deps.hilt_android
+    kapt deps.hilt_android_compiler
+}
